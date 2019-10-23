@@ -1,0 +1,67 @@
+/* #jspsych-html-keyboard-response-stimulus {
+    width: 100%;
+} */
+
+/* #jspsych-content {
+    width: 50%
+} */
+
+#cash {
+    font-size: 20rem;
+    color: green;
+    display: block;
+    margin: 0.6em auto 0.6em auto;
+}
+
+.jt-intro {
+    margin: auto;
+    background-color: rgba(226, 226, 226, 0.7) !important;
+}
+
+.jt-intro h2 {
+    font-weight: 900;
+    color: dodgerblue;
+}
+
+.title {
+    font-size: 10rem;
+    color: dodgerblue;
+}
+
+.col-sm-6 {
+    text-align: center;
+}
+
+#pick {
+    text-align: center;
+    font-size: 30px;
+    vertical-align: middle
+}
+
+#left_choice {
+    text-align: center;
+    padding-right: 1em;
+    padding-top: 1em;
+    padding-bottom: 1em;
+    padding-left: 1em;
+    margin-top: 1em;
+    margin-bottom: 0;
+    white-space: nowrap
+}
+
+#right_choice {
+    text-align: center;
+    padding-left: 1em;
+    padding-right: 1em;
+    padding-top: 1em;
+    padding-bottom: 1em;
+    margin-bottom: 0;
+    margin-top: 1em;
+    white-space: nowrap
+}
+
+#or {
+    text-align: center;
+    padding-top: 2.75em;
+    margin-bottom: 0
+}
