@@ -3,9 +3,11 @@ let timeline = [];
 /**
  * GLOBAL VAR
  */
+let SESSIONID = uuidv4();
+
 let CURRENT_INDEX = 0;
-let NUMBER_OF_CHOICE_TRIALS = 23;
-let ORDER = [3, 5, 9, 11, 15, 16, 19, 22, 24];
+let NUMBER_OF_CHOICE_TRIALS = 20;
+let ORDER = [1, 4, 6, 10, 11, 14, 18];
 let CHOSEN = [];
 let PAYOUT;
 
@@ -32,6 +34,27 @@ let welcome_page = {
 
 timeline.push(welcome_page);
 
+/**
+ * Input subject identifier
+ */
+let subject_identifier = {
+    type: 'survey-text',
+    questions: [
+        {prompt: "Please enter the subject ID", name: 'SubjectID', required: true}
+    ],
+};
+timeline.push(subject_identifier);
+
+/**
+ * Input timepoint
+ */
+let timepoint = {
+    type: 'survey-multi-choice',
+    questions: [
+        {prompt: "Which session is this?", name: 'Timepoint', options: ["Baseline", "Mid test (6 weeks)","Post test (12 weeks)", "Follow up (24 weeks)"], required:true} 
+    ],
+}
+timeline.push(timepoint);
 
 /**
  * Instructions block.
@@ -191,6 +214,12 @@ let get_choice_html = (easy_offer, easy_trials, hard_offer, hard_trials) => {
  * This generates the timeline for this task.
  * @param {number} number_of_trials 
  */
+let problem_counter = 0;
+let problem_indexer = function(){
+    problem_counter++;
+    return problem_counter;
+}
+
 let generate_timeline = (number_of_trials) => {
     /**
      * Created the supplied number of number games trials.
@@ -205,7 +234,10 @@ let generate_timeline = (number_of_trials) => {
             },
             key_answer: params.correct_answer,
             data: {
-                key_answer_character: jsPsych.pluginAPI.convertKeyCodeToKeyCharacter(params.correct_answer)
+                key_answer_character: jsPsych.pluginAPI.convertKeyCodeToKeyCharacter(params.correct_answer),
+                SessionID: SESSIONID,
+                problem_index: problem_indexer(),
+
             },
             choices: CONFIGURATION.KEY_OPTIONS,
             response_ends_trial: true,
@@ -242,7 +274,8 @@ let get_choice_page = (choice_page_required) => {
             easy_offer: params.easy_offer,
             hard_offer: params.hard_offer,
             easy_trials: params.easy_trials,
-            hard_trials: params.hard_trials
+            hard_trials: params.hard_trials,
+            SessionID: SESSIONID
         },
         response_ends_trial: true,
         on_finish: () => {
@@ -280,7 +313,7 @@ let get_choice_page = (choice_page_required) => {
                         choices: [13],
                         response_ends_trial: true,
                         data: {
-                            payment: '$'+PAYOUT,
+                            payment: '$'+PAYOUT
                         }
                     }
                     
@@ -317,6 +350,11 @@ let generate_payout_html = function(array) {
     `
 }
 
+let choice_counter = 0;
+let choice_indexer = function(){
+    choice_counter++;
+    return choice_counter;
+}
 /**
  * jsPsych Initialization.
  */
@@ -330,17 +368,34 @@ jsPsych.init({
 
             if (data.key_press === 39) {
                 data.choice = 'HARD';
+                data.choice_index = choice_indexer();
             } else if (data.key_press === 37) {
                 data.choice = 'EASY';
+                data.choice_index = choice_indexer();
             }
         }
     },
     on_finish: (data) => {
+        let JSONdata = JSON.parse(jsPsych.data.get().json());
+        let file_name_csv = "add-it-up-subject-" + JSONdata[1]["subject_id"] + JSONdata[2]["timepoint"] + ".csv";
+        let file_name_json = "add-it-up-subject-" + JSONdata[1]["subject_id"] + JSONdata[2]["timepoint"] + ".json";
+
+        jsPsych.data.addProperties({SUBID: JSONdata[1]["subject_id"]});
+        jsPsych.data.addProperties({SessionTimePoint: JSONdata[2]["timepoint"]});
+
         if (window.location !== window.parent.location) {
+            jsPsych.pauseExperiment();
+
+            jsPsych.data.get().localSave('csv', file_name_csv);
+            jsPsych.data.get().localSave('json', file_name_json);
+
             TaskFlow.Client.sendTaskData(data);
             TaskFlow.Client.endTask();
         } else {
-            jsPsych.data.get().localSave('csv', 'add-it-up.csv');
+            jsPsych.pauseExperiment();
+
+            jsPsych.data.get().localSave('csv', file_name_csv);
+            jsPsych.data.get().localSave('json', file_name_json);
         }
     },
 });
